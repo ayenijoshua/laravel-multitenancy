@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UserController;
 use App\Repositories\Interfaces\RepositoryInterface;
 use App\Repositories\UserRepository;
@@ -24,10 +24,10 @@ class AppServiceProvider extends ServiceProvider
               return (new UserRepository(new \App\Models\User));
           });
 
-          $this->app->when(CompanyController::class)
+          $this->app->when(TenantController::class)
           ->needs(RepositoryInterface::class)
           ->give(function () {
-              return (new CompanyRepository(new \App\Models\Company));
+              //return (new CompanyRepository(new \App\Models\Teneant));
           });
     }
 
