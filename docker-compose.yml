@@ -2,14 +2,14 @@ version: '3'
 services: 
 
     #PHP services
-    min-crm-php:
+    php:
         build: 
             context: ./
             dockerfile: ./docker/Dockerfile
         volumes: 
             - ./:/var/www/html
 
-    mini-crm-webserver: 
+    webserver: 
         image: nginx:1.17
         working_dir: /var/www/html
         volumes: 
@@ -18,46 +18,47 @@ services:
         ports: 
             - "80:80"
 
-    mini-crm-node:
+    node:
         image: node:12
         user: node
         working_dir: /assets
         volumes: 
             - ./:/assets
         command: npm install
-        command: npm run watch
+        #command: npm run watch
 
-    mini-crm-db:
+    db:
         image: mysql:8
         environment: 
-            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-            MYSQL_ROOT_HOST: "%"
-            MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
-            MYSQL_DATABASE: "${DB_DATABASE}"
-            MYSQL_USER: "${DB_USERNAME}"
-            MYSQL_PASSWORD: "${DB_PASSWORD}"
+           MYSQL_DATABASE: ${DB_DATABASE}
+           MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+           MYSQL_PASSWORD: ${DB_PASSWORD}
+           MYSQL_USER: ${DB_USERNAME}
+           SERVICE_TAGS: dev
+           SERVICE_NAME: mysql
         volumes: 
-            - mini-crm-mysqldata:/var/lib/mysql
+            - mysqldata:/var/lib/mysql
+            - ./docker/mysql:/docker-entrypoint-initdb.d
 
-    mini-crm-test-db:
-        image: mysql:8
-        environment: 
-            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-            MYSQL_ROOT_HOST: "%"
-            MYSQL_ROOT_PASSWORD: "${TEST_DB_PASSWORD}"
-            MYSQL_DATABASE: "${TEST_DB_DATABASE}"
-            MYSQL_USER: "${TEST_DB_USERNAME}"
-            MYSQL_PASSWORD: "${TEST_DB_PASSWORD}"
-        volumes: 
-            - mini-crm-mysqltestdata:/var/lib/mysql
+    # mini-crm-test-db:
+    #     image: mysql:8
+    #     environment: 
+    #         MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    #         MYSQL_ROOT_HOST: "%"
+    #         MYSQL_ROOT_PASSWORD: "${TEST_DB_PASSWORD}"
+    #         MYSQL_DATABASE: "${TEST_DB_DATABASE}"
+    #         MYSQL_USER: "${TEST_DB_USERNAME}"
+    #         MYSQL_PASSWORD: "${TEST_DB_PASSWORD}"
+    #     volumes: 
+    #         - mini-crm-mysqltestdata:/var/lib/mysql
 
-    mini-crm-redis:
-        image: redis:5
-        volumes: 
-            - mini-crm-redisdata:/data
+    # mini-crm-redis:
+    #     image: redis:5
+    #     volumes: 
+    #         - mini-crm-redisdata:/data
 
 volumes: 
-    mini-crm-mysqldata:
-    mini-crm-mysqltestdata:
-    mini-crm-redisdata:
+    mysqldata:
+    #mini-crm-mysqltestdata:
+    #mini-crm-redisdata:
 

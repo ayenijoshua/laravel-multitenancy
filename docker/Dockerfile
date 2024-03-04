@@ -17,74 +17,33 @@ WORKDIR /var/www/html
 #COPY composer.lock composer.json /var/www/
 
 
-RUN apt-get update \
-   && apt-get install --quiet --yes --no-install-recommends \
-     libzip-dev \
-     unzip \
-   && docker-php-ext-install zip pdo pdo_mysql \
-   && pecl install -o -f redis-5.1.1 \
-   && docker-php-ext-enable redis
+RUN apt-get update && apt-get install -y \
+  sqlite3 \
+  git \
+  curl \
+  libpng-dev \
+  libonig-dev \
+  libxml2-dev \
+  zip \
+  unzip
 
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+#clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd --gid 1000 appuser \
-    && useradd --uid 1000 -g appuser \
-        -G www-data,root --shell /bin/bash \
-        --create-home appuser
+#install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-USER appuser
+# get latest composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Install dependencies
-# RUN apt-get update && apt-get install -y \
-#     build-essential \
-#     libpng-dev \
-#     libjpeg62-turbo-dev \
-#     libfreetype6-dev \
-#     locales \
-#     zip \
-#     jpegoptim optipng pngquant gifsicle \
-#     vim \
-#     nano \
-#     unzip \
-#     git \
-#     curl \
-#     supervisor 
+#copy .env.example to .env
 
-# Clear cache
-#RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# generate artisan key
 
-# Install extensions
-#RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl
-#RUN docker-php-ext-configure gd --with-gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/
-#RUN docker-php-ext-install gd
+# create system user to run composer and artisan commands
+#RUN useradd -G www-data,root -u $uid -d /home/$user $user
+#RUN mkdir -p /home/$user/.composer && \
+    #chown -R $user:$user /home/$user
 
-# Install composer
-#RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Copy the applicaton code to the web folder
-#COPY . /var/www
-#RUN chown -R www-data:www-data /var/www
-#WORKDIR /var/www
-
-# Install Composer packages
-#RUN composer install --optimize-autoloader --no-dev --no-interaction
-
-# Initialize the application
-#RUN php artisan app:install
-
-# Add user for laravel application
-#RUN groupadd -g 1000 $user
-#RUN useradd -u 1000 -ms /bin/bash -g $user $user
-
-# Copy existing application directory contents
-#COPY . /var/www
-
-# Copy existing application directory permissions
-#COPY --chown=$user:$user . /var/www
-
-# Change current user
-#USER $user
-
-# Expose port 9000 and start php-fpm server
-#EXPOSE 9000
-#CMD ["php-fpm"]
+#set working directory
+WORKDIR /var/www/html
