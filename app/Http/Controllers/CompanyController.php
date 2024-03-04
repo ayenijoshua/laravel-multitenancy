@@ -5,14 +5,34 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\Company;
+use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use App\Repositories\Interfaces\RepositoryInterface;
+use App\Http\Requests\CreateUserRequest;
 
 class CompanyController extends Controller
 {
     function __construct(RepositoryInterface $company)
     {
+        
         $this->company = $company;
+    }
+
+    public function checkSubDomain(){
+        $subdomain = session()->get('domain');
+        info('2',[$subdomain]);
+        $company = $this->company->getModel()->where('domain',$subdomain)->first();
+        if($company){
+            return $company;
+        }
+        return false;
+    }
+
+    public function tenancyLogin(Request $request){
+        if($company=$this->checkSubDomain()){
+            return view('auth.company-login',['logo'=>$company->logo_path]);
+        }
+        return view('errors.tenant-404');
     }
 
     function all($paginate=null)
@@ -64,13 +84,36 @@ class CompanyController extends Controller
     }
 
     public function companyEmployees(Request $request){
-        return view('company.employees',['id'=>$request->user('company')->id]);
+        if($this->checkSubDomain()){
+            return view('company.employees',['id'=>$request->user('company')->id]);
+        }
+        return view('errors.tenant-404');
     }
 
-    public function employees(Company $id){
-        $company = $id;
-        $employees = $company->employees()->paginate(5);
-        return response(['employees'=>$employees,'success'=>true],200);
+    public function createEmployee(Request $request){
+        if($this->checkSubDomain()){
+            return view('company.create-employee',['id'=>$request->user('company')->id]);
+        }
+        return view('errors.tenant-404');
+    }
+
+    public function storeEmployee(CreateUserRequest $request){
+        if($this->checkSubDomain()){
+            (new UserRepository(new \App\Models\User))->create($request->validated());
+            return response(['message'=>'User created successfully','success'=>true],201);
+        }
+        return view('errors.tenant-404');
+    }
+
+    public function employees(){
+        if($company = $this->checkSubDomain()){
+            //$company = $id;
+            $employees = $company->employees()->paginate(5);
+            return response(['employees'=>$employees,'success'=>true],200);
+        }else{
+            return response(['message'=>'Tenant not found','success'=>false],404);
+        }
+       
     }
 
     /**
@@ -81,10 +124,11 @@ class CompanyController extends Controller
      */
     public function show(Company $id)
     {
-        info($id);
-        $company = $id;
-
-        return response(['company'=>$company,'success'=>true],200);
+        if($this->checkSubDomain()){
+            $company = $id;
+            return response(['company'=>$company,'success'=>true],200);
+        }
+        return view('errors.tenant-404');
     }
 
     /**

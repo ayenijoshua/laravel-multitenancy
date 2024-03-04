@@ -24,10 +24,11 @@ class CreateCompanyRequest extends FormRequest
     public function rules()
     {
         return [
-            'name'=>'required|string',
-            'email' => 'required|unique:companies|string|email',
-            'password' => 'required|string',
-            'url' => 'required|string',
+            'domain'=>'bail|required|string|max:10|unique:companies',
+            'name'=>'bail|required|string',
+            'email' => 'bail|required|unique:companies|string|email',
+            'password' => 'bail|required|string',
+            'url' => 'bail|required|string',
             'logo_path' => 'nullable|file'
         ];
     }

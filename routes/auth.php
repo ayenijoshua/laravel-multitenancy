@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
@@ -13,6 +14,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/register', [RegisteredUserController::class, 'create'])
                 ->middleware('guest')
                 ->name('register');
+
+Route::get('/register-company', [AuthenticatedSessionController::class, 'registerCompany'])
+                ->middleware('guest')
+                ->name('register-company');
+
+Route::post('/register-company', [CompanyController::class, 'store'])
+                ->middleware('guest')
+                ->name('company.store');
 
 Route::post('/register', [RegisteredUserController::class, 'store'])
                 ->middleware('guest');
@@ -60,10 +69,19 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store'])
 // Route::post('/confirm-password', [ConfirmablePasswordController::class, 'store'])
 //                 ->middleware('auth');
 
+
+
+
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
                 ->middleware('auth')
                 ->name('logout');
 
-Route::get('/company-login', [AuthenticatedSessionController::class, 'createCompany'])->name('company.login');
+Route::group(array('domain'=>'{subdomain}.localhost','middleware'=>['set.subdomain']), function(){//Route::input('subdomain');
+    
+    Route::get('company-login', [CompanyController::class, 'tenancyLogin'])->name('tenant.login');
+});
+
+
+#Route::get('/company-login', [AuthenticatedSessionController::class, 'createCompany'])->name('company.login');
 
 Route::post('/company-login', [AuthenticatedSessionController::class, 'storeCompany'])->name('company.auth');

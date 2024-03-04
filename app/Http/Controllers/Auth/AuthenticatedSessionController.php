@@ -22,6 +22,10 @@ class AuthenticatedSessionController extends Controller
         return view('auth.login');
     }
 
+    public function registerCompany(){
+        return view('auth.company-register');
+    }
+
     /**
      * dispay compay login view
      */
@@ -75,6 +79,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        //session()->put(['subdomain'=>null]);
+        return redirect('http://localhost');
+        
     }
 }

@@ -22,7 +22,13 @@ class CompanyRepository extends EloquentRepository implements RepositoryInterfac
     }
 
     public function updateCompany($model,$request){
-        $this->update($model,$request->except('logo_path'));
+        $data = [ 'name'=>$request->name,
+            'email' => $request->email,
+            'password' => $request->password,
+            'url' => $request->url,
+            'domain'=>$request->domain
+        ];
+        $this->update($model,$data);
         if($request->hasFile('logo_path')){
             $file = $this->storeLocalFile($request,'logo_path','company-logos');
             $this->update($model,['logo_path'=>$file]);
@@ -30,7 +36,13 @@ class CompanyRepository extends EloquentRepository implements RepositoryInterfac
     }
 
     public function createCompany($request){
-        $company = $this->create($request->except('logo_path'));
+        $data = [ 'name'=>$request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            'url' => $request->url,
+            'domain'=>$request->domain
+        ];
+        $company = $this->create($data);
         if($request->hasFile('logo_path')){
             $file = $this->storeLocalFile($request,'logo_path','company-logos');
             $this->update($company,['logo_path'=>$file]);

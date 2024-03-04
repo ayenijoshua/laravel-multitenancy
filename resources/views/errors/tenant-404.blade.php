@@ -38,22 +38,14 @@
                             <a href="{{ route('employee.dashboard') }}" class="text-sm text-gray-700 underline">Employee Dashboard</a>
                         @endif
                     @else
-                        @if(!auth('company')->user())
-                            <a href="{{ route('login') }}" class="text-sm text-gray-700 underline">Admin Log in</a>
-                            <a href="{{ route('company.store') }}" class="ml-4 text-sm text-gray-700 underline">Create Company</a>
-                        @endif
-
-                        
+                        <a href="http://localhost" class="text-sm text-gray-700 underline">Home</a>
                     @endauth
                 </div>
             @endif
 
             <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
                 <div class="flex justify-center pt-8 sm:justify-start sm:pt-0">
-                    <h1>Multitenancy -> Companies</h1>
-                </div>
-                <div id="app">
-                <company-component />
+                    <h1 style="background-color:red">Tenant not found</h1>
                 </div>
             </div>
         </div>

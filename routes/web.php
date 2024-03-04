@@ -19,13 +19,19 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->middleware(['set.subdomain']);
+
+Route::get('/error', function () {
+    return view('errors.tenant-404');
+});//->middleware(['set.subdomain']);
+
+
 Route::get('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('users.logout');
 
 
 Route::get('companies/{paginate?}',[CompanyController::class, 'all'])->name('companies');
 
-Route::group(['prefix' => 'admin','middleware'=>['auth']], function () {
+Route::group(['prefix' => 'admin','middleware'=>['auth','set.subdomain']], function () {
     Route::get('dashboard',[UserController::class, 'index'])->name('admin.dashboard');
 
     Route::get('create-company',[CompanyController::class, 'create'])->name('admin.create-company');
@@ -47,17 +53,27 @@ Route::group(['prefix' => 'admin','middleware'=>['auth']], function () {
     Route::delete('delete-user/{id}',[UserController::class, 'destroy'])->name('admin.delete-user');
 });
 
-Route::group(['prefix' => 'company','middleware'=>['auth:company']], function () {
-    Route::get('dashboard',[CompanyController::class, 'index'])->name('company.dashboard');
-    Route::get('company-employees',[CompanyController::class, 'companyEmployees'])->name('company-employees');
-    Route::get('{id}/employees',[CompanyController::class, 'employees'])->name('company.employees');
-    Route::get('{id}/show',[CompanyController::class, 'show'])->name('company.show');
+//Route::domain('{subdomain}.localhost')->group(function(){
+    
+//});
+
+Route::group(['domain'=>'{subdomain}.localhost','prefix' => 'company','middleware'=>['auth:company','set.subdomain']], function(){
+    //Route::group(['prefix' => 'company','middleware'=>['auth:company']], function () {
+        Route::get('dashboard',[CompanyController::class, 'index'])->name('company.dashboard');
+        Route::get('company-employees',[CompanyController::class, 'companyEmployees'])->name('company-employees');
+        Route::get('{id}/employees',[CompanyController::class, 'employees'])->name('company.employees');
+        Route::get('create-employee',[CompanyController::class, 'createEmployee'])->name('company.create-employee');
+        Route::post('store-employee',[CompanyController::class, 'storeEmployee'])->name('company.store-employee');
+        Route::get('{id}/show',[CompanyController::class, 'show'])->name('company.show');
+        
+    //});
+   
 });
 
-Route::group(['prefix' => 'employee','middleware'=>['auth']], function () {
-    Route::get('dashboard',[UserController::class, 'userDashboard'])->name('employee.dashboard');
-    Route::get('user/{id}',[UserController::class, 'user'])->name('employee.user');
-    Route::post('update-employee/{id}',[UserController::class, 'update'])->name('employee.update');
-});
+// Route::group(['prefix' => 'employee','middleware'=>['auth']], function () {
+//     Route::get('dashboard',[UserController::class, 'userDashboard'])->name('employee.dashboard');
+//     Route::get('user/{id}',[UserController::class, 'user'])->name('employee.user');
+//     Route::post('update-employee/{id}',[UserController::class, 'update'])->name('employee.update');
+// });
 
 require __DIR__.'/auth.php';
